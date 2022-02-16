@@ -406,7 +406,7 @@ class ohmygroup:
             goal = temp[0]
             path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
 
-            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL):
+            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]>1):
 
                 mode = 2
                 current = goal
