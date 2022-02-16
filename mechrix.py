@@ -258,15 +258,15 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
                     pass
             except:
                 pass
-    print(d_list)
+    #print(d_list)
     max1, max2 = 0, 0
-    try:
+
+    if (len(d_list) != 0):
         max1 = max(d_list)
         d_list.pop(d_list.index(max1))
-        if (len(d_list) != 0):
-            max2 = max(d_list)
-    except:
-        pass
+    if (len(d_list) != 0):
+        max2 = max(d_list)
+
 
     if (max1 + max2 > cur_po):
         bo = 1
@@ -420,7 +420,7 @@ class mechrix:
             # print(maxL)
             # print([y,x])
             # print(goal)
-            print(path)
+            # print(path)
             # print(path)
             return path
 
