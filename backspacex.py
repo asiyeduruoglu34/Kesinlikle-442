@@ -90,7 +90,7 @@ def gain(current, current_point, goal, goal_point):
       if(cost>distance):
         cost = distance
         goal = p[j]
-    gain = goal_point*2-distance*1.5
+    gain = goal_point*2-distance*2.5
     return [gain, goal]
 
 
