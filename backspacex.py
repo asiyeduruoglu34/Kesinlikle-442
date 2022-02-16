@@ -5,6 +5,7 @@ from skimage import io
 import matplotlib.pyplot as plt
 from math import ceil, floor
 
+
 def goalPos(down_img, cur_loc, cur_po, color_codes):
     # print(color_codes)
     base_loc = []  # color bases locations
@@ -16,6 +17,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
             temp = list(np.where(np.all(down_img == list(color_codes[j][0]), axis=2)))
             # print(temp)
         except:
+            print("nereye gideceğimi bilmiyorum")
             temp = [[], []]
             pass
         # print(color_codes[j][0])
@@ -44,10 +46,12 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
         for i in range(2):
             base_loc[j][i] = 50 * base_loc[j][i]
 
+    # print(base_loc)
+
     if (mode == 1):  # for the initial goal
         gn = -100000  # random initial value
         # sorting algorithm for finding the optimal path
-        for i in range(len(base_points)):
+        for i in range(len(base_loc)):
             if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
                 gn = gain(cur_loc, cur_po, base_loc[i], base_points[i])[0]
                 dummy = gain(cur_loc, cur_po, base_loc[i], base_points[i])[1]
@@ -58,7 +62,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
         # print(base_loc)
         # dummy = [350,350]
         gn = -10000000  # random initial value
-        for i in range(len(base_points)):
+        for i in range(len(base_loc)):
             if (abs(int(cur_loc[0] / 50) - int(base_loc[i][0] / 50)) + abs(
                     int(cur_loc[1] / 50) - int(base_loc[i][1] / 50)) < 0.1):
                 # dummy = [350,350]
@@ -68,30 +72,31 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
                     gn = gain(cur_loc, cur_po, base_loc[i], base_points[i])[0]
                     dummy = gain(cur_loc, cur_po, base_loc[i], base_points[i])[1]
 
-        return dummy, base_loc, base_points, base_loc_down
+        return dummy, base_loc, base_points, base_loc_down, gn[2]
+
 
 def gain(current, current_point, goal, goal_point):
-  if(current_point-goal_point)<0:
-    return [-10000000, 0]
-  else:
-    p1 = [goal[0]+4, goal[1]+4]  #top left
-    p2 = [goal[0]+4, goal[1]+25]  #top middle
-    p3 = [goal[0]+4, goal[1]+46]  #top right
-    p4 = [goal[0]+25, goal[1]+46]  #right middle
-    p5 = [goal[0]+46, goal[1]+46]  #bottom right
-    p6 = [goal[0]+46, goal[1]+25]  #bottom middle
-    p7 = [goal[0]+46, goal[1]+4]  #bottom left
-    p8 = [goal[0]+25, goal[1]+4]  #left middle
-    p = [p1, p2, p3, p4, p5, p6, p7, p8]
-    #p = [p1, p3, p5, p7]
-    cost = 10000 # initial high cost
-    for j in range(len(p)):
-      distance = ((current[0]-p[j][0])**2+(current[1]-p[j][1])**2)**0.5
-      if(cost>distance):
-        cost = distance
-        goal = p[j]
-    gain = goal_point*2-distance*2.5
-    return [gain, goal]
+    if (current_point - goal_point) < 0:
+        return [-10000000, 0]
+    else:
+        p1 = [goal[0] + 4, goal[1] + 4]  # top left
+        p2 = [goal[0] + 4, goal[1] + 25]  # top middle
+        p3 = [goal[0] + 4, goal[1] + 46]  # top right
+        p4 = [goal[0] + 25, goal[1] + 46]  # right middle
+        p5 = [goal[0] + 46, goal[1] + 46]  # bottom right
+        p6 = [goal[0] + 46, goal[1] + 25]  # bottom middle
+        p7 = [goal[0] + 46, goal[1] + 4]  # bottom left
+        p8 = [goal[0] + 25, goal[1] + 4]  # left middle
+        p = [p1, p2, p3, p4, p5, p6, p7, p8]
+        # p = [p1, p3, p5, p7]
+        cost = 10000  # initial high cost
+        for j in range(len(p)):
+            distance = ((current[0] - p[j][0]) ** 2 + (current[1] - p[j][1]) ** 2) ** 0.5
+            if (cost > distance):
+                cost = distance
+                goal = p[j]
+        gain = goal_point * 2 - distance*2.5
+        return [gain, goal, goal_point]
 
 
 ##A* algorithm
@@ -258,15 +263,15 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
                     pass
             except:
                 pass
-    #print(d_list)
+    # print(d_list)
     max1, max2 = 0, 0
-
-    if (len(d_list) != 0):
+    try:
         max1 = max(d_list)
         d_list.pop(d_list.index(max1))
-    if (len(d_list) != 0):
-        max2 = max(d_list)
-
+        if (len(d_list) != 0):
+            max2 = max(d_list)
+    except:
+        pass
 
     if (max1 + max2 > cur_po):
         bo = 1
@@ -319,42 +324,14 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
                 if (path2[j][i] == 0 or path2[j][i] == 750):
                     pass
                 elif (path2[j][i] % 100 == 0):
-                    '''
-                    if(i == 0):
-                      path2.append([path2[j][i]+2, path2[j][i]])
-                    else:
-                      path2.append([path2[j][i], path2[j][i]+2])
-                    '''
                     path2[j][i] = path2[j][i] + 2
-
                 elif (path2[j][i] % 50 == 0):
-                    '''
-                    if(i == 0):
-                      path2.append([path2[j][i]-2, path2[j][i]])
-                    else:
-                      path2.append([path2[j][i], path2[j][i]-2])
-                    '''
                     path2[j][i] = path2[j][i] - 2
 
         return path2
 
 
 class backspacex:
-    '''
-    This is the random player used in the colab example.
-    Edit this file properly to turn it into your submission or generate a similar file that has the same minimal class structure.
-    You have to replace the name of the class (ME461Group) with one of the following (exactly as given below) to match your group name
-        atlas
-        backspacex
-        ducati
-        hepsi1
-        mechrix
-        meturoam
-        nebula
-        ohmygroup
-        tulumba
-    After you edit this class, save it as groupname.py where groupname again is exactly one of the above
-    '''
 
     def __init__(self, userName, clrDictionary, maxStepSize, maxTime):
         self.name = userName  # your object will be given a user name, i.e. your group name
@@ -364,9 +341,6 @@ class backspacex:
         clr = clrDictionary
 
     def run(self, img, info):
-        # current_location = info['meturoam'][0]
-        # current_point = info['meturoam'][1]
-        # print(current_location)
 
         ratio = 0.02  # downsample ratio
         down_img = cv2.resize(img, (0, 0), fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST)  # downsample the image
@@ -404,24 +378,25 @@ class backspacex:
             mode = 1
             temp = goalPos(down_img, [y, x], game_point, color_codes)
             goal = temp[0]
+            print(goal)
             path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
 
-            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2])>1):
+            print(len(temp[2]))
+            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
 
                 mode = 2
                 current = goal
-                temp = goalPos(down_img, current, game_point, color_codes)
-                goal = temp[0]
-                path2 = go(current, goal, maxL, game_point, temp[3], temp[2], down_img, img)
-                for j in range(len(path2)):
-                    path.append(path2[j])
-                mode = 1
+                temp2 = goalPos(down_img, current, game_point, color_codes)
+                goal = temp2[0]
+                if (temp[4] + temp2[4] > game_point):
+                    pass
+                else:
+                    path2 = go(current, goal, maxL, game_point, temp2[3], temp2[2], down_img, img)
+                    for j in range(len(path2)):
+                        path.append(path2[j])
+                    mode = 1
 
-            # print(maxL)
-            # print([y,x])
-            # print(goal)
-            # print(path)
-            # print(path)
+            print(path)
             return path
 
         except:
@@ -432,4 +407,5 @@ class backspacex:
                     return [[y - 26, x], [y - 26, x]]
                 else:
                     return [[y + 26, x], [y + 26, x]]
+
 
