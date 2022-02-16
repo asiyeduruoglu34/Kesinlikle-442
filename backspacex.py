@@ -53,10 +53,11 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
         # sorting algorithm for finding the optimal path
         for i in range(len(base_loc)):
             if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                gn = gain(cur_loc, cur_po, base_loc[i], base_points[i])[0]
-                dummy = gain(cur_loc, cur_po, base_loc[i], base_points[i])[1]
+                tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
+                gn = tin[0]
+                dummy = tin[1]
 
-        return dummy, base_loc, base_points, base_loc_down
+        return dummy, base_loc, base_points, base_loc_down, tin[2]
 
     if (mode == 2):  # for the second goal
         # print(base_loc)
@@ -69,10 +70,11 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
                 pass
             else:
                 if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                    gn = gain(cur_loc, cur_po, base_loc[i], base_points[i])[0]
-                    dummy = gain(cur_loc, cur_po, base_loc[i], base_points[i])[1]
+                    tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
+                    gn = tin[0]
+                    dummy = tin[1]
 
-        return dummy, base_loc, base_points, base_loc_down, gn[2]
+        return dummy, base_loc, base_points, base_loc_down, tin[2]
 
 
 def gain(current, current_point, goal, goal_point):
@@ -378,12 +380,10 @@ class backspacex:
             mode = 1
             temp = goalPos(down_img, [y, x], game_point, color_codes)
             goal = temp[0]
-            print(goal)
             path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
 
-            print(len(temp[2]))
             if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-
+                print("ikinciyi düşünüyorum")
                 mode = 2
                 current = goal
                 temp2 = goalPos(down_img, current, game_point, color_codes)
@@ -407,5 +407,6 @@ class backspacex:
                     return [[y - 26, x], [y - 26, x]]
                 else:
                     return [[y + 26, x], [y + 26, x]]
+
 
 
