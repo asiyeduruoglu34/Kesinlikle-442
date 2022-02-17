@@ -627,7 +627,7 @@ class ducati:
 
 
         except:
-            print("beyaza çektim")
+            #print("beyaza çektim")
             if (y % 100 < 50):
                 return [[y, x], [y, x]]
             else:

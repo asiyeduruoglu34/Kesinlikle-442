@@ -292,7 +292,7 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
         path = [[int(current[0]), nx1], [ny1, nx1], [ny1, nx2], [ny2, nx2]]
         return path
     else:
-        print("A****")
+        #print("A****")
         goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
         # current2 = [int(current[0]/50), int(current[1]/50)]
         current2 = []
