@@ -1,336 +1,28 @@
 import numpy as np
-import random
-import cv2
-from skimage import io
-import matplotlib.pyplot as plt
-from math import ceil, floor
+import itertools
 
 
-def goalPos(down_img, cur_loc, cur_po, color_codes):
-    # print(color_codes)
-    base_loc = []  # color bases locations
-    base_points = []  # color points
+class Node:
 
-    # find the locations of the colors
-    for j in range(len(color_codes)):
-        try:
-            temp = list(np.where(np.all(down_img == list(color_codes[j][0]), axis=2)))
-            # print(temp)
-        except:
-            #print("nereye gideceğimi bilmiyorum")
-            temp = [[], []]
-            pass
-        # print(color_codes[j][0])
-        if (len(temp[0]) == 0):
-            pass
-        elif (len(temp[0]) == 1):
-            temp2 = [temp[0][0], temp[1][0]]
-            base_loc.append(temp2)
-        elif (len(temp[0]) == 2):
-            temp2 = [temp[0][0], temp[1][0]]
-            base_loc.append(temp2)
-            temp2 = [temp[0][1], temp[1][1]]
-            base_loc.append(temp2)
-        elif (len(temp[0]) == 3):
-            temp2 = [temp[0][0], temp[1][0]]
-            base_loc.append(temp2)
-            temp2 = [temp[0][1], temp[1][1]]
-            base_loc.append(temp2)
-            temp2 = [temp[0][2], temp[1][2]]
-            base_loc.append(temp2)
-        for k in range(len(temp[0])):
-            base_points.append(color_codes[j][1])
-    base_loc_down = base_loc
-    # find the locations in the original image
-    for j in range(len(base_loc)):
-        for i in range(2):
-            base_loc[j][i] = 50 * base_loc[j][i]
-
-    # print(base_loc)
-
-    if (mode == 1):  # for the initial goal
-        gn = -100000  # random initial value
-        # sorting algorithm for finding the optimal path
-        for i in range(len(base_loc)):
-            if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
-                gn = tin[0]
-                dummy = tin[1]
-
-        return dummy, base_loc, base_points, base_loc_down, tin[2]
-
-    if (mode == 2):  # for the second goal
-        # print(base_loc)
-        # dummy = [350,350]
-        gn = -10000000  # random initial value
-        for i in range(len(base_loc)):
-            if (abs(int(cur_loc[0] / 50) - int(base_loc[i][0] / 50)) + abs(
-                    int(cur_loc[1] / 50) - int(base_loc[i][1] / 50)) < 0.1):
-                # dummy = [350,350]
-                pass
-            else:
-                if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                    tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
-                    gn = tin[0]
-                    dummy = tin[1]
-
-        return dummy, base_loc, base_points, base_loc_down, tin[2]
-
-
-def gain(current, current_point, goal, goal_point):
-    if (current_point - goal_point) < 0:
-        return [-10000000, 0]
-    else:
-        p1 = [goal[0] + 4, goal[1] + 4]  # top left
-        p2 = [goal[0] + 4, goal[1] + 25]  # top middle
-        p3 = [goal[0] + 4, goal[1] + 46]  # top right
-        p4 = [goal[0] + 25, goal[1] + 46]  # right middle
-        p5 = [goal[0] + 46, goal[1] + 46]  # bottom right
-        p6 = [goal[0] + 46, goal[1] + 25]  # bottom middle
-        p7 = [goal[0] + 46, goal[1] + 4]  # bottom left
-        p8 = [goal[0] + 25, goal[1] + 4]  # left middle
-        p = [p1, p2, p3, p4, p5, p6, p7, p8]
-        # p = [p1, p3, p5, p7]
-        cost = 10000  # initial high cost
-        for j in range(len(p)):
-            distance = ((current[0] - p[j][0]) ** 2 + (current[1] - p[j][1]) ** 2) ** 0.5
-            if (cost > distance):
-                cost = distance
-                goal = p[j]
-        gain = goal_point * 2 - distance*3
-        return [gain, goal, goal_point]
-
-
-##A* algorithm
-
-def heur(ch_p, en_p):
-    h = ((ch_p[0] - en_p[0]) ** 2) + ((ch_p[1] - en_p[1]) ** 2)
-    return h
-
-
-# A* algorithm is also adopted from https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
-class Node():
-    """A node class for A* Pathfinding"""
-
-    def __init__(self, parent=None, position=None):
+    def __init__(self, pos, parent=None):
+        self.pos = pos
         self.parent = parent
-        self.position = position
-
         self.g = 0
         self.h = 0
         self.f = 0
 
+    def __lt__(self, other):
+        return self.f < other.f
+
     def __eq__(self, other):
-        return self.position == other.position
+        return self.pos == other.pos
 
+    def manhattan(self, end):
+        global prescalar
+        return prescalar * (abs(self.pos[0] - end.pos[0]) + abs(self.pos[1] - end.pos[1]))
 
-def astar(maze, start, end):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
-
-    # Create start and end node
-    start_node = Node(None, start)
-    start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
-
-    # Initialize both open and closed list
-    open_list = []
-    closed_list = []
-
-    # Add the start node
-    open_list.append(start_node)
-
-    # Loop until you find the end
-    while len(open_list) > 0:
-
-        # Get the current node
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
-
-        # Pop current off open list, add to closed list
-        open_list.pop(current_index)
-        closed_list.append(current_node)
-
-        # Found the goal
-        if current_node == end_node:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
-            return path[::-1]  # Return reversed path
-
-        # Generate children
-        children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:  # 4 neighbours
-
-            # Get node position
-            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
-
-            # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (
-                    len(maze[len(maze) - 1]) - 1) or node_position[1] < 0:
-                continue
-
-            # node_color = mazeImg[node_position[0], node_position[1], :]
-            # Make sure walkable terrain
-            # if node_color[0] == 0 and node_color[1] == 0 and node_color[0] == 0:
-            # continue
-
-            # Create new node
-            new_node = Node(current_node, node_position)
-
-            # Append
-            children.append(new_node)
-        # print(node_color)
-        # Loop through children
-        for child in children:
-
-            # Child is on the closed list
-            for closed_child in closed_list:
-                if child == closed_child:
-                    continue
-
-            node_color = maze[node_position[0], node_position[1]]
-            # print(node_color)
-            # print(maze[start[0], start[1]])
-
-            # Create the f, g, and h values
-            # print(current_node.position)
-            for j in range(3):
-                if ((node_color[j] == maze[start[0], start[1]])[j] or (node_color[j] == maze[end[0], end[1]][j])):
-                    child.g = child.g + 1
-                else:
-                    child.g = child.g + 1000
-
-            child.h = heur(child.position, end_node.position)
-            child.f = child.g + child.h
-            # print(child.f)
-
-            # Child is already in the open list
-            for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
-
-            # Add the child to the open list
-            open_list.append(child)
-
-
-def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
-    bo = 0
-    # error 100 den büyükken aşağıdaki metot, diğer durum için downsample edip A* kullanılabilir
-    # goal bulamadığı zaman random u da çağıralım
-
-    # down sample the goal and current position
-    goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
-    current2 = []
-    if (current[0] / 50 - int(current[0] / 50) > 0.5):
-        current2.append(int(current[0] / 50) + 1)
-    else:
-        current2.append(int(current[0] / 50))
-    if (current[1] / 50 - int(current[1] / 50) > 0.5):
-        current2.append(int(current[1] / 50) + 1)
-    else:
-        current2.append(int(current[1] / 50))
-    del_x = goal2[1] - current2[1]
-    del_y = goal2[0] - current2[0]
-
-    for j in range(len(base_loc)):
-        for i in range(2):
-            base_loc[j][i] = int(base_loc[j][i] / 50)
-    # print(base_loc)
-    # print(del_x+1, del_y+1)
-    d_list = []
-
-    for i in range(abs(del_x) + 1):
-        for j in range(abs(del_y) + 1):
-            try:
-                if (del_x >= 0 and del_y >= 0):
-                    index = base_loc.index([current2[0] + j, current2[1] + i])
-                    d_list.append(base_points[index])
-                elif (del_x >= 0 and del_y <= 0):
-                    index = base_loc.index([current2[0] - j, current2[1] + i])
-                    d_list.append(base_points[index])
-                elif (del_x <= 0 and del_y >= 0):
-                    index = base_loc.index([current2[0] + j, current2[1] - i])
-                    d_list.append(base_points[index])
-                elif (del_x <= 0 and del_y <= 0):
-                    index = base_loc.index([current2[0] - j, current2[1] - i])
-                    d_list.append(base_points[index])
-                else:
-                    pass
-            except:
-                pass
-    # print(d_list)
-    max1, max2 = 0, 0
-    try:
-        max1 = max(d_list)
-        d_list.pop(d_list.index(max1))
-        if (len(d_list) != 0):
-            max2 = max(d_list)
-    except:
-        pass
-
-    if (max1 + max2 > cur_po):
-        bo = 1
-    else:
-        bo = 0
-
-    if (bo == 0):
-        dist_x = goal[1] - current[1]
-        dist_y = goal[0] - current[0]
-
-        nx1 = int(current[1]) + int(dist_x / 2)
-        ny1 = int(current[0]) + int(dist_y / 2)
-        nx2 = int(nx1) + int(dist_x / 2)
-        ny2 = int(ny1) + int(dist_y / 2)
-
-        path = [[int(current[0]), nx1], [ny1, nx1], [ny1, nx2], [ny2, nx2]]
-        return path
-    else:
-        #print("A****")
-        goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
-        # current2 = [int(current[0]/50), int(current[1]/50)]
-        current2 = []
-        if (current[0] / 50 - int(current[0] / 50) > 0.5):
-            current2.append(int(current[0] / 50) + 1)
-        else:
-            current2.append(int(current[0] / 50))
-        if (current[1] / 50 - int(current[1] / 50) > 0.5):
-            current2.append(int(current[1] / 50) + 1)
-        else:
-            current2.append(int(current[1] / 50))
-
-        current2 = tuple(current2)
-        goal2 = tuple(goal2)
-
-        path = astar(down_img, current2, goal2)
-
-        path2 = []
-        for j in range(len(path)):
-            path2.append(list(path[j]))
-
-        for j in range(len(path2)):
-            for i in range(2):
-                path2[j][i] = 50 * path2[j][i]
-
-        current3 = path2[0][0]
-        path2.insert(0, [current3, current[1]])
-
-        for j in range(len(path2) - 1):
-            for i in range(2):
-                if (path2[j][i] == 0 or path2[j][i] == 750):
-                    pass
-                elif (path2[j][i] % 100 == 0):
-                    path2[j][i] = path2[j][i] + 2
-                elif (path2[j][i] % 50 == 0):
-                    path2[j][i] = path2[j][i] - 2
-
-        return path2
+    def __str__(self):
+        return str(self.pos)
 
 
 class ohmygroup:
@@ -339,73 +31,364 @@ class ohmygroup:
         self.name = userName  # your object will be given a user name, i.e. your group name
         self.maxStep = maxStepSize  # maximum length of the returned path from run()
         self.maxTime = maxTime  # run() is supposed to return before maxTime
-        global clr
-        clr = clrDictionary
+        self.maxPoint = 100  # maximum points you can have
+        vals = list(clrDictionary.values())  # get the values of the color dictionary
+        vals.append([(0, 0, 0), 0, 1])  # add black to the list of values
+        vals.append([(255, 255, 255), 0, 1])  # add white to the list of values
+        self.colorVals = {}  # create a dictionary of colors
+        for i, j, k in vals:  # for each color in the list of values
+            self.colorVals[i] = j  # add the color to the dictionary
+        self.arena = np.zeros((15, 15), dtype=int)  # create a 15x15 arena
 
-    def run(self, img, info):
+    def run(self, img, info):  # img is a 2D numpy array, info is a dictionary
+        self.oppPos = []  # list of opponent's positions
+        self.scores = []  # list of scores
+        self.info = info  # dictionary of info
+        self.myPos = self.info[self.name][0]  # your position
+        self.myPoints = self.info[self.name][1]  # your points
+        self.my_ij = [int((self.myPos[0]) / 50), int((self.myPos[1]) / 50)]  # your position in the arena
 
-        ratio = 0.02  # downsample ratio
-        down_img = cv2.resize(img, (0, 0), fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST)  # downsample the image
-        down_img[0], down_img[1], down_img[2] = down_img[2], down_img[1], down_img[0]  # bgr2rgb
+        for player in self.info:  # for each player
+            if player != self.name:  # if it's not you
+                self.oppPos.append(self.info[player][0])  # add the position to the list of opponent's positions
+        for i in range(7):  # for each castle
+            for j in range(7):
+                self.arena[2 * i + 1][2 * j + 1] = self.colorVals[
+                    tuple(img[(2 * i + 1) * 50 + 25][(2 * j + 1) * 50 + 25])]  # add the color value to the arena
+                if self.arena[2 * i + 1][2 * j + 1] != 0:  # if the color value is not 0
+                    self.scores.append(
+                        [self.arena[2 * i + 1][2 * j + 1], (25 + (2 * i + 1) * 50, 25 + (2 * j + 1) * 50),
+                         (2 * i + 1, 2 * j + 1)])  # add the score to the list
+                    # self.scores
+        self.scores.sort(key=lambda x: x[0], reverse=True)  # sort the scores in descending order
+        if not len(self.oppPos):
+            return self.soloRunner()
+        target = self.chooseTarget()  # choose the target
+        return self.chooseRoute(target)  # choose the route to the target and return
 
-        color_codes = []  # create a list then add color informations
-        color_codes.append(list(clr['clr100'][:]))
-        color_codes.append(list(clr['clr50'][:]))
-        color_codes.append(list(clr['clr30'][:]))
-        color_codes.append(list(clr['clr20'][:]))
-        color_codes.append(list(clr['clr10'][:]))
-        color_codes.append(list(clr['clr9'][:]))
-        color_codes.append(list(clr['clr8'][:]))
-        color_codes.append(list(clr['clr7'][:]))
-        color_codes.append(list(clr['clr6'][:]))
-        color_codes.append(list(clr['clr5'][:]))
-        color_codes.append(list(clr['clr4'][:]))
-        color_codes.append(list(clr['clr3'][:]))
-        color_codes.append(list(clr['clr2'][:]))
-        color_codes.append(list(clr['clr1'][:]))
-        # print(color_codes)
-
-        imS = img.shape[0]  # assume square image and get size
-
-        # get current location
-        loc, game_point = info[self.name]
-        y, x = loc  # get current y,x coordinates
-        maxL = self.maxStep  # total travel
-        global mode
-        myinfo = info[self.name]
-
-        try:
-
-            # print(down_img[int(y/50),int(x/50)])
-            mode = 1
-            temp = goalPos(down_img, [y, x], game_point, color_codes)
-            goal = temp[0]
-            path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
-
-            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-                mode = 2
-                current = goal
-                temp2 = goalPos(down_img, current, game_point, color_codes)
-                goal = temp2[0]
-                if (temp[4] + temp2[4] > game_point):
-                    pass
-                else:
-                    path2 = go(current, goal, maxL, game_point, temp2[3], temp2[2], down_img, img)
-                    for j in range(len(path2)):
-                        path.append(path2[j])
-                    mode = 1
-
-            #print(path)
-            return path
-
-        except:
-            if (y % 100 < 50):
-                return [[y, x], [y, x]]
+    def chooseTarget(self):  # choose the target
+        for i in range(len(self.scores)):  # for each score
+            counter = 0  # counter for the number of opponents
+            if self.scores[i][0] > self.myPoints:  # if the color value is greater than your points
+                self.scores[i][0] = -1  # set the color value to -1
             else:
-                if (y % 50 < 25):
-                    return [[y - 26, x], [y - 26, x]]
+                for j in range(len(self.oppPos)):  # for each opponent
+                    if not self.amICloser(self.scores[i][1], self.oppPos[j]):  # if the opponent is closer to the castle
+                        self.scores[i][0] = 0  # set the score to 0
+                    else:  # if the opponent is not closer to the castle
+                        counter += 1  # add 1 to the counter
+                if counter == len(
+                        self.oppPos):  # if the counter is equal to the number of opponents and the score is less than or equal to yours
+                    return self.scores[i][2]  # return the coordinates of the castle
+        # if no target is found, return the biggest one
+        for i in range(len(self.scores)):  # for each score
+            if self.scores[i][0] != -1:  # if the color value is less than or equal to your points
+                return self.scores[i][2]  # return the coordinates of the castle
+
+    def chooseRoute(self, target):  # target is a coordinate
+        costMap = np.ones((15, 15), dtype=int) * 100  # create a 15x15 cost map
+        imin = max(min(self.my_ij[0], target[0]) - 1, 0)
+        imax = min(max(self.my_ij[0], target[0]) + 1, 14)
+        jmin = max(min(self.my_ij[1], target[1]) - 1, 0)
+        jmax = min(max(self.my_ij[1], target[1]) + 1, 14)
+
+        for i in range(imin, imax + 1):  # for each row
+            for j in range(jmin, jmax + 1):  # for each column
+                if self.arena[i][j] <= self.myPoints:  # if the color value is less than or equal to your points
+                    costMap[i][j] -= self.arena[i][j]  # subtract the color value from the cost map
+                else:  # if the color value is greater than your points
+                    costMap[i][j] = -1  # set the cost map to -1
+
+        costMap = costMap[imin:imax + 1, jmin:jmax + 1]  # crop the cost map
+        start = [self.my_ij[0] - imin, self.my_ij[1] - jmin]  # start position
+        end = [target[0] - imin, target[1] - jmin]  # end position
+        pathArena = astar(start, end, costMap, presclr=20)  # find the path using A*
+        pathArena = [[index[0] + imin, index[1] + jmin] for index in pathArena]  # add the offset
+        return self.move(pathArena)  # return the path
+
+    def move(self, selectedPath):  # selectedPath is a list of coordinates in the arena
+        selectedPath.reverse()  # reverse the path
+        selectedPath.pop(0)
+        for i in range(len(selectedPath)):
+            selectedPath[i][0] *= 50  # multiply the coordinates by 50
+            selectedPath[i][1] *= 50  # multiply the coordinates by 50
+            selectedPath[i][0] += 25  # add 25 to the x coordinate
+            selectedPath[i][1] += 25  # add 25 to the y coordinate
+        path = [create_route(self.myPos[0], selectedPath[0][0], self.myPos[1], selectedPath[0][1])]
+        for i in range(1, len(selectedPath)):
+            path.append(create_route(path[i - 1][0], selectedPath[i][0], selectedPath[i - 1][1], selectedPath[i][1]))
+        return path
+
+    def amICloser(self, castle, opponent):  # castle is a coordinate, opponent is a coordinate
+        if abs(castle[0] - opponent[0]) + abs(castle[1] - opponent[1]) < abs(castle[0] - self.myPos[0]) + abs(
+                castle[1] - self.myPos[1]):  # opponent is closer
+            return False  # return False
+        return True  # return True
+
+    def soloRunner(self):
+        myTargets = self.scores[:7]
+        # print(self.scores)
+        for i in range(len(self.scores)):
+            if self.scores[i][0] == 1:
+                append = self.scores[i]
+        myTargets.append(append)
+        for i in range(7):
+            for j in range(7):
+                counter = 0
+                for k in myTargets:
+                    if k[2] != (2 * i + 1, 2 * j + 1):
+                        counter += 1
+                    else:
+                        self.arena[2 * i + 1][2 * j + 1] = k[0]
+                    if counter == 8 and self.arena[2 * i + 1][2 * j + 1] != 0:
+                        self.arena[2 * i + 1][2 * j + 1] = -1
+        mymin = 1000
+        for i in range(len(myTargets)):
+            if manhattan(self.myPos, myTargets[i][1]) < mymin:
+                mymin = manhattan(self.myPos, myTargets[i][1])
+                my_min = myTargets[i]
+        myTargets.remove(my_min)
+        mymin = 1000
+        for i in range(len(myTargets)):
+            if manhattan(self.myPos, myTargets[i][1]) < mymin:
+                mymin = manhattan(my_min[1], myTargets[i][1])
+                my_min_2 = myTargets[i]
+        myTargets.remove(my_min_2)
+
+        myCoords = []
+        for i in range(len(myTargets)):
+            myCoords.append(myTargets[i][1])
+        permutations = list(itertools.permutations(myCoords))
+        lastLen = float('inf')
+        for i in range(len(permutations)):
+            sumLen = 0
+            for j in range(len(permutations[i])):
+                if j == 0:
+                    sumLen = manhattan(my_min_2[1], permutations[i][j])
                 else:
-                    return [[y + 26, x], [y + 26, x]]
+                    sumLen += manhattan(permutations[i][j - 1], permutations[i][j])
+
+            if lastLen > sumLen:
+                lastLen = sumLen
+                my_path = permutations[i]
+
+        my_path = list(my_path)
+        my_path.insert(0, my_min_2[1])
+        my_path.insert(0, my_min[1])
+        resultantPath = []
+
+        dummyStep = free_corridor(self.myPos[0], self.myPos[1], my_path[0][0], my_path[0][1])
+        resultantPath.append(dummyStep)
+        my_path[0] = (dummyStep[-1][0], dummyStep[-1][1])
+
+        for i in range(1, len(my_path)):
+            dummyStep = free_corridor(my_path[i - 1][0], my_path[i - 1][1], my_path[i][0], my_path[i][1])
+            resultantPath.append(dummyStep)
+            my_path[i] = (dummyStep[-1][0], dummyStep[-1][1])
+
+        # flatten resultantPath
+        flat_list = [item for sublist in resultantPath for item in sublist]
+
+        return flat_list
 
 
+def astar(start, end, costmap, presclr=1):
+    '''
+    This function implements a star algorithm over a cost map.
+    '''
+    global prescalar
+    prescalar = presclr
+    open_list = []
+    closed_list = []
+    open_list.append(Node(start))
+    endNode = Node(end)
+    while len(open_list) > 0:
+        open_list.sort()
+        current = open_list.pop(0)
+        closed_list.append(current)
+        if current.pos == endNode.pos:
+            return reconstruct_path(current)
+        for neighbor in neighbors(current, costmap):
+            if costmap[neighbor.pos[0]][neighbor.pos[1]] == -1:
+                continue
+            neighbor.g = current.g + costmap[neighbor.pos[0]][neighbor.pos[1]]
+            neighbor.h = neighbor.manhattan(endNode)
+            neighbor.f = neighbor.g + neighbor.h
+            if neighbor not in open_list:
+                open_list.append(neighbor)
+    return None
 
+
+def reconstruct_path(current):
+    '''
+    This function reconstructs the path from the current node to the start node.
+    '''
+    path = []
+    while current.parent is not None:
+        path.append(current.pos)
+        current = current.parent
+    path.append(current.pos)
+    return path
+
+
+def neighbors(current, costmap):
+    '''
+    This function returns the 4-way neighbors of the current node.
+    '''
+    neighbors = []
+    for i in range(current.pos[0] - 1, current.pos[0] + 2):
+        if i < 0 or i >= costmap.shape[0]:
+            continue
+        elif i == current.pos[0]:
+            for j in range(current.pos[1] - 1, current.pos[1] + 2):
+                if j < 0 or j >= costmap.shape[1]:
+                    continue
+                elif j == current.pos[1]:
+                    continue
+                else:
+                    neighbors.append(Node([i, j], current))
+        else:
+            neighbors.append(Node([i, current.pos[1]], current))
+    return neighbors
+
+
+def create_route(x1, x2, y1, y2):
+    array = [[], []]
+    if x1 >= x2 + 24:
+        array[0] = [x2 + 23, y1]
+        array[1] = [x2 + 23, y1]
+    elif x1 <= x2 - 25:
+        array[0] = [x2 - 23, y1]
+        array[1] = [x2 - 23, y1]
+    else:
+        array[0] = []
+        array[1] = [x1, y1]
+
+    if y1 >= y2 + 24:
+        array[1][1] = y2 + 23
+    elif y1 <= y2 - 24:
+        array[1][1] = y2 - 23
+    else:
+        array[1] = []
+
+    array = [ele for ele in array if ele != []]
+    array = array[0]
+    return array
+
+
+def manhattan(start, end):
+    return abs(start[0] - end[0]) + abs(start[1] - end[1])
+
+
+def create_route(x1, x2, y1, y2):
+    array = [[], []]
+
+    if x1 >= x2 + 24:
+        array[0] = [x2 + 23, y1]
+        array[1] = [x2 + 23, y1]
+    elif x1 <= x2 - 25:
+        array[0] = [x2 - 23, y1]
+        array[1] = [x2 - 23, y1]
+    else:
+        array[0] = []
+        array[1] = [x1, y1]
+
+    if y1 >= y2 + 24:
+        array[1][1] = y2 + 23
+    elif y1 <= y2 - 24:
+        array[1][1] = y2 - 23
+    else:
+        array[1] = []
+
+    array = [ele for ele in array if ele != []]
+
+    return array
+
+
+def free_corridor(myX, myY, targetX, targetY):
+    quotX, remX = divmod(myX, 50)
+    quotY, remY = divmod(myY, 50)
+    quotTX = targetX // 50
+    quotTY = targetY // 50
+    array = []
+    if (abs(quotTX - quotX) + abs(quotTY - quotY)) < 3:
+        array = create_route(myX, targetX, myY, targetY)
+        return array
+
+    else:
+        if (quotX % 2) == 0:
+            if myY > targetY:
+                array.append([myX, targetY + 28])
+                if myX >= targetX + 24:
+                    array.append([targetX + 23, targetY + 28])
+                    array.append([targetX + 23, targetY + 23])
+                elif myX <= targetX - 24:
+                    array.append([targetX - 23, targetY + 28])
+                    array.append([targetX - 23, targetY + 23])
+            else:
+                array.append([myX, targetY - 28])
+                if myX >= targetX + 24:
+                    array.append([targetX + 23, targetY - 28])
+                    array.append([targetX + 23, targetY - 23])
+                elif myX <= targetX - 24:
+                    array.append([targetX - 23, targetY - 28])
+                    array.append([targetX - 23, targetY - 23])
+
+        elif (quotY % 2) == 0:
+            if myX > targetX:
+                array.append([targetX + 28, myY])
+                if myY >= targetY + 24:
+                    array.append([targetX + 28, targetY + 23])
+                    array.append([targetX + 23, targetY + 23])
+                elif myY <= targetY - 24:
+                    array.append([targetX + 28, targetY - 23])
+                    array.append([targetX + 23, targetY - 23])
+            else:
+                array.append([targetX - 28, myY])
+                if myY >= targetY + 24:
+                    array.append([targetX - 28, targetY + 23])
+                    array.append([targetX - 23, targetY + 23])
+                elif myY <= targetY - 24:
+                    array.append([targetX - 28, targetY - 23])
+                    array.append([targetX - 23, targetY - 23])
+        else:
+            if myX >= targetX:
+                array.append([myX - (remX + 2), myY])
+                newX = myX - (remX + 2)
+                if myY > targetY:
+                    array.append([newX, targetY + 28])
+                    if newX >= targetX + 24:
+                        array.append([targetX + 23, targetY + 28])
+                        array.append([targetX + 23, targetY + 23])
+                    elif newX <= targetX - 24:
+                        array.append([targetX - 23, targetY + 28])
+                        array.append([targetX - 23, targetY + 23])
+                else:
+                    array.append([newX, targetY - 28])
+                    if newX >= targetX + 24:
+                        array.append([targetX + 23, targetY - 28])
+                        array.append([targetX + 23, targetY - 23])
+                    elif newX <= targetX - 24:
+                        array.append([targetX - 23, targetY - 28])
+                        array.append([targetX - 23, targetY - 23])
+
+            else:
+                array.append([myX + (52 - remX), myY])
+                newX = myX + (52 - remX)
+                if myY > targetY:
+                    array.append([newX, targetY + 28])
+                    if newX >= targetX + 24:
+                        array.append([targetX + 23, targetY + 28])
+                        array.append([targetX + 23, targetY + 23])
+                    elif newX <= targetX - 24:
+                        array.append([targetX - 23, targetY + 28])
+                        array.append([targetX - 23, targetY + 23])
+                else:
+                    array.append([newX, targetY - 28])
+                    if newX >= targetX + 24:
+                        array.append([targetX + 23, targetY - 28])
+                        array.append([targetX + 23, targetY - 23])
+                    elif newX <= targetX - 24:
+                        array.append([targetX - 23, targetY - 28])
+                        array.append([targetX - 23, targetY - 23])
+    return array
