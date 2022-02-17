@@ -42,175 +42,158 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
             base_loc.append(temp2)
         for k in range(len(temp[0])):
             base_points.append(color_codes[j][1])
-    base_loc_down = base_loc
 
-    # find the locations in the original image
-    for j in range(len(base_loc)):
-        for i in range(2):
-            base_loc[j][i] = 50 * base_loc[j][i]
+    base_loc_down = []
     ##going too fast on the beginnings
     neighbours = []
     neighbours_po = []
     gn = -100000  # random initial value
     cur_loc_down = [int(cur_loc[0] / 50), int(cur_loc[1] / 50)]
-
-    #try:
-    if (len(base_points) > 20 and cur_po > 50):
-        for j in range(len(base_loc)):
-            for i in range(2):
-                base_loc_down[j][i] = int(base_loc[j][i]/50)
+    for j in range(len(base_loc_down)):
+        for i in range(2):
+            base_loc_down.append(base_loc[j][i])
+    ctrl = 1
+    if (len(base_points) > 1 and cur_po > 100):
+        ctrl = 0
         gain_mode = 1
         if (cur_loc_down[0] % 2 == 0 or cur_loc_down[1] % 2 == 0):
             if (cur_loc_down[0] % 2 == 0 and cur_loc_down[1] % 2 == 1):
-                if (cur_loc_down[0] - 1 > 0 or cur_loc_down[0] + 1 < 16):
-                    if(cur_loc_down[0] - 1 > 0):
+                if (cur_loc_down[0] - 1 > 0 or cur_loc_down[0] + 1 < 15):
+                    if (cur_loc_down[0] - 1 > 0):
                         try:
-                            neighbours.append([cur_loc_down[0] - 1, [cur_loc_down[1]]])
-                            index1 = base_loc_down.index(neighbours[-1])
-                            neighbours_po.append(base_points[index1])
+                            index1 = base_loc.index([cur_loc_down[0] - 1, cur_loc_down[1]])
+                            if (index1 <= 36):
+                                neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1]])
+                                neighbours_po.append(base_points[index1])
                         except:
                             pass
 
-                    if (cur_loc_down[0] + 1 < 16):
+                    if (cur_loc_down[0] + 1 < 15):
                         try:
-                            neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1]])
-                            index2 = base_loc_down.index(neighbours[-1])
-                            neighbours_po.append(base_points[index2])
+                            index2 = base_loc.index([cur_loc_down[0] + 1, cur_loc_down[1]])
+                            if (index2 <= 36):
+                                neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1]])
+                                neighbours_po.append(base_points[index2])
                         except:
                             pass
 
 
             elif (cur_loc_down[0] % 2 == 1 and cur_loc_down[1] % 2 == 0):
-                if (cur_loc_down[1] - 1 > 0 or cur_loc_down[1] + 1 < 16):
-                    if(cur_loc_down[1] - 1 > 0):
+                if (cur_loc_down[1] - 1 > 0 or cur_loc_down[1] + 1 < 15):
+                    if (cur_loc_down[1] - 1 > 0):
                         try:
-                            neighbours.append([cur_loc_down[0], cur_loc_down[1] - 1])
-                            index1 = base_loc_down.index(neighbours[-1])
-                            neighbours_po.append(base_points[index1])
+                            index1 = base_loc.index([cur_loc_down[0], cur_loc_down[1] - 1])
+                            if (index1 <= 36):
+                                neighbours.append([cur_loc_down[0], cur_loc_down[1] - 1])
+                                neighbours_po.append(base_points[index1])
                         except:
                             pass
 
-                    if (cur_loc_down[1] + 1 < 16):
+                    if (cur_loc_down[1] + 1 < 15):
                         try:
-                            neighbours.append([cur_loc_down[0], cur_loc_down[1] + 1])
-                            index2 = base_loc_down.index(neighbours[-1])
-                            neighbours_po.append(base_points[index2])
+                            index2 = base_loc.index([cur_loc_down[0], cur_loc_down[1] + 1])
+                            if (index2 <= 36):
+                                neighbours.append([cur_loc_down[0], cur_loc_down[1] + 1])
+                                neighbours_po.append(base_points[index2])
                         except:
                             pass
 
 
             else:
 
-                if (cur_loc_down[0] + 1 < 16 and cur_loc_down[1] + 1 < 16):
+                if (cur_loc_down[0] + 1 < 15 and cur_loc_down[1] + 1 < 15):
                     try:
-                        neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1] + 1])
-                        index1 = base_loc_down.index(neighbours[-1])
-                        neighbours_po.append(base_points[index1])
+                        index1 = base_loc.index([cur_loc_down[0] + 1, cur_loc_down[1] + 1])
+                        if (index1 <= 36):
+                            neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1] + 1])
+                            neighbours_po.append(base_points[index1])
                     except:
                         pass
-                if (cur_loc_down[0] - 1 > 0 and cur_loc_down[1] + 1 < 16):
+                if (cur_loc_down[0] - 1 > 0 and cur_loc_down[1] + 1 < 15):
                     try:
-                        neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1] + 1])
-                        index1 = base_loc_down.index(neighbours[-1])
-                        neighbours_po.append(base_points[index1])
+                        index1 = base_loc.index([cur_loc_down[0] - 1, cur_loc_down[1] + 1])
+                        if (index1 <= 36):
+                            neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1] + 1])
+                            neighbours_po.append(base_points[index1])
                     except:
                         pass
-                if (cur_loc_down[0] + 1 < 16 and cur_loc_down[1] - 1 > 0):
+                if (cur_loc_down[0] + 1 < 15 and cur_loc_down[1] - 1 > 0):
                     try:
-                        neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1] - 1])
-                        index1 = base_loc_down.index(neighbours[-1])
-                        neighbours_po.append(base_points[index1])
+                        index1 = base_loc.index([cur_loc_down[0] + 1, cur_loc_down[1] - 1])
+                        if (index1 <= 36):
+                            neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1] - 1])
+                            neighbours_po.append(base_points[index1])
                     except:
                         pass
                 if (cur_loc_down[0] - 1 > 0 and cur_loc_down[1] - 1 > 0):
                     try:
-                        neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1] - 1])
-                        index1 = base_loc_down.index(neighbours[-1])
-                        neighbours_po.append(base_points[index1])
+                        index1 = base_loc.index([cur_loc_down[0] - 1, cur_loc_down[1] - 1])
+                        if (index1 <= 36):
+                            neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1] - 1])
+                            neighbours_po.append(base_points[index1])
                     except:
                         pass
 
         else:
-            if (cur_loc_down[0] + 2 < 16):
+            if (cur_loc_down[0] + 2 < 15):
                 try:
-                    neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1]])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
-                except:
-                    pass
-
-            if (cur_loc_down[0] + 2 < 16 and cur_loc_down[1] - 2 > 0):
-                try:
-                    neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1] - 2])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
-                except:
-                    pass
-
-            if (cur_loc_down[0] + 2 < 16 and cur_loc_down[1] + 2 < 16):
-                try:
-                    neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1] + 2])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
+                    index1 = base_loc.index([cur_loc_down[0] + 2, cur_loc_down[1]])
+                    if (index1 <= 36):
+                        neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1]])
+                        neighbours_po.append(base_points[index1])
                 except:
                     pass
 
             if (cur_loc_down[1] - 2 > 0):
                 try:
-                    neighbours.append([cur_loc_down[0], cur_loc_down[1] - 2])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
+                    index1 = base_loc.index([cur_loc_down[0], cur_loc_down[1] - 2])
+                    if (index1 <= 36):
+                        neighbours.append([cur_loc_down[0], cur_loc_down[1] - 2])
+                        neighbours_po.append(base_points[index1])
+
                 except:
                     pass
 
-            if (cur_loc_down[1] + 2 < 16):
+            if (cur_loc_down[1] + 2 < 15):
                 try:
-                    neighbours.append([cur_loc_down[0], cur_loc_down[1] + 2])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
+                    index1 = base_loc.index([cur_loc_down[0], cur_loc_down[1] + 2])
+                    if (index1 <= 36):
+                        neighbours.append([cur_loc_down[0], cur_loc_down[1] + 2])
+                        neighbours_po.append(base_points[index1])
                 except:
                     pass
 
             if (cur_loc_down[0] - 2 > 0):
                 try:
-                    neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1]])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
+                    index1 = base_loc.index([cur_loc_down[0] - 2, cur_loc_down[1]])
+                    if (index1 <= 36):
+                        neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1]])
+                        neighbours_po.append(base_points[index1])
                 except:
                     pass
 
-            if (cur_loc_down[0] - 2 > 0 and cur_loc_down[1] - 2 > 0):
-                try:
-                    neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1] - 2])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
-                except:
-                    pass
-
-            if (cur_loc_down[0] - 2 > 0 and cur_loc_down[1] + 2 < 16):
-                try:
-                    neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1] + 2])
-                    index1 = base_loc_down.index(neighbours[-1])
-                    neighbours_po.append(base_points[index1])
-                except:
-                    pass
-
-
+        for j in range(len(base_loc)):
+            for i in range(2):
+                base_loc[j][i] = int(base_loc[j][i] * 50)
         for j in range(len(neighbours)):
             for i in range(2):
                 neighbours[j][i] = 50 * neighbours[j][i]
 
-        min_loc = neighbours[neighbours_po.index(min(neighbours_po))]
+        # print(neighbours)
+        if (len(neighbours) > 0):
+            min_loc = neighbours[neighbours_po.index(max(neighbours_po))]
+            goal_location = gain(cur_loc, cur_po, min_loc, max(neighbours_po), 0, 0, gain_mode)
+            # print(goal_location)
+            return [[cur_loc[0], goal_location[1]], [goal_location[0], goal_location[1]]]
+        else:
+            gain_mode = 0
 
-        goal_location = gain(cur_loc, cur_po, min_loc, 5, 0, 0, gain_mode)
-        print(goal_location, cur_po)
-        print(150)
-        return [[cur_loc[0], goal_location[1]], [goal_location[0], goal_location[1]]]
-
-
-    """
-    except:
-        print(2)
+    if (gain_mode == 0):
+        gain_mode = 0
+        if (ctrl == 1):
+            for j in range(len(base_loc)):
+                for i in range(2):
+                    base_loc[j][i] = int(base_loc[j][i] * 50)
         if (mode == 1):  # for the initial goal
 
             try:
@@ -253,6 +236,8 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                 comp_points.append(info['hepsi1'][1])
             except:
                 pass
+            
+
             gn = -100000  # random initial value
             # sorting algorithm for finding the optimal path
             for i in range(len(base_loc)):
@@ -261,7 +246,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                     gn = tin[0]
                     dummy = tin[1]
 
-            return dummy, base_loc, base_points, base_loc_down, tin[2]
+            return dummy, base_loc, base_points, tin[2]
 
         if (mode == 2):  # for the second goal
             # print(base_loc)
@@ -278,8 +263,8 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                         gn = tin[0]
                         dummy = tin[1]
 
-            return dummy, base_loc, base_points, base_loc_down, tin[2]
-    """
+            return dummy, base_loc, base_points, tin[2]
+
 
 def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_mode):
     if (current_point - goal_point) < 0:
@@ -315,7 +300,7 @@ def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_m
                         pass
 
             # gain = goal_point*2-distance*3.5
-            gain = goal_point * 2 - distance * 3.5 + temp_dist * 4
+            gain = goal_point * 2 - distance * 3 + temp_dist * 0
             return [gain, goal, goal_point]
 
         else:
@@ -473,8 +458,8 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
     # print(del_x+1, del_y+1)
     d_list = []
 
-    for i in range(abs(del_x) + 1):
-        for j in range(abs(del_y) + 1):
+    for i in range(abs(del_x) + 2):
+        for j in range(abs(del_y) + 2):
             try:
                 if (del_x >= 0 and del_y >= 0):
                     index = base_loc.index([current2[0] + j, current2[1] + i])
@@ -600,48 +585,56 @@ class meturoam:
         maxL = self.maxStep  # total travel
         global mode
         myinfo = info[self.name]
-        # try:
+        try:
 
-        # print(down_img[int(y/50),int(x/50)])
-        mode = 1
-        temp = goalPos(down_img, [y, x], game_point, color_codes, info)
-        print(temp)
+            # print(down_img[int(y/50),int(x/50)])
+            mode = 1
+            temp = goalPos(down_img, [y, x], game_point, color_codes, info)
 
-        if (len(temp) < 3):
-            return temp
-        else:
-            goal = temp[0]
-            path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
-
-            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-                mode = 2
-                current = goal
-                temp2 = goalPos(down_img, current, game_point, color_codes, info)
-                goal = temp2[0]
-                if (temp[4] + temp2[4] > game_point):
-                    pass
-                else:
-                    path2 = go(current, goal, maxL, game_point, temp2[3], temp2[2], down_img, img)
-                    for j in range(len(path2)):
-                        path.append(path2[j])
-                    mode = 1
-
-            # print(path)
-            return path
-            
-
-        '''
-        except:
-          if(y%100 < 50):
-            return [[y,x], [y,x]]
-          else:
-            if(y%50 < 25):
-              return [[y-26,x], [y-26,x]]
+            if (len(temp) < 3):
+                # print("runmode")
+                return temp
             else:
-              return [[y+26,x], [y+26,x]]
+                if (len(temp[2]) > 1):
+                    # print("normal")
+                    goal = temp[0]
+                    path = go([y, x], goal, maxL, game_point, temp[1], temp[2], down_img, img)
 
-        '''
+                    if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
+                        mode = 2
+                        current = goal
+                        temp2 = goalPos(down_img, current, game_point, color_codes, info)
+                        goal = temp2[0]
+                        if (temp[3] + temp2[3] > game_point):
+                            pass
+                        else:
+                            path2 = go(current, goal, maxL, game_point, temp2[1], temp2[2], down_img, img)
+                            for j in range(len(path2)):
+                                path.append(path2[j])
+                            mode = 1
+                    # print(path)
+                    return path
+                else:
+                    # print("beyaza çektim")
+                    if (y % 100 < 50):
+                        return [[y, x], [y, x]]
+                    else:
+                        if (y % 50 < 25):
+                            return [[y - 26, x], [y - 26, x]]
+                        else:
+                            return [[y + 26, x], [y + 26, x]]
 
 
+
+
+        except:
+            # print("beyaza çektim")
+            if (y % 100 < 50):
+                return [[y, x], [y, x]]
+            else:
+                if (y % 50 < 25):
+                    return [[y - 26, x], [y - 26, x]]
+                else:
+                    return [[y + 26, x], [y + 26, x]]
 
 
