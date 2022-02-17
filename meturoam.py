@@ -6,10 +6,13 @@ import matplotlib.pyplot as plt
 from math import ceil, floor
 
 
-def goalPos(down_img, cur_loc, cur_po, color_codes):
+def goalPos(down_img, cur_loc, cur_po, color_codes, info):
     # print(color_codes)
     base_loc = []  # color bases locations
     base_points = []  # color points
+    comp_loc = []  # competitors locations
+    comp_points = []  # competitors points
+    gain_mode = 0
 
     # find the locations of the colors
     for j in range(len(color_codes)):
@@ -17,7 +20,6 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
             temp = list(np.where(np.all(down_img == list(color_codes[j][0]), axis=2)))
             # print(temp)
         except:
-            print("nereye gideceğimi bilmiyorum")
             temp = [[], []]
             pass
         # print(color_codes[j][0])
@@ -41,43 +43,245 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
         for k in range(len(temp[0])):
             base_points.append(color_codes[j][1])
     base_loc_down = base_loc
+
     # find the locations in the original image
     for j in range(len(base_loc)):
         for i in range(2):
             base_loc[j][i] = 50 * base_loc[j][i]
+    ##going too fast on the beginnings
+    neighbours = []
+    neighbours_po = []
+    gn = -100000  # random initial value
+    cur_loc_down = [int(cur_loc[0] / 50), int(cur_loc[1] / 50)]
 
-    # print(base_loc)
+    #try:
+    if (len(base_points) > 20 and cur_po > 50):
+        for j in range(len(base_loc)):
+            for i in range(2):
+                base_loc_down[j][i] = int(base_loc[j][i]/50)
+        gain_mode = 1
+        if (cur_loc_down[0] % 2 == 0 or cur_loc_down[1] % 2 == 0):
+            if (cur_loc_down[0] % 2 == 0 and cur_loc_down[1] % 2 == 1):
+                if (cur_loc_down[0] - 1 > 0 or cur_loc_down[0] + 1 < 16):
+                    if(cur_loc_down[0] - 1 > 0):
+                        try:
+                            neighbours.append([cur_loc_down[0] - 1, [cur_loc_down[1]]])
+                            index1 = base_loc_down.index(neighbours[-1])
+                            neighbours_po.append(base_points[index1])
+                        except:
+                            pass
 
-    if (mode == 1):  # for the initial goal
-        gn = -100000  # random initial value
-        # sorting algorithm for finding the optimal path
-        for i in range(len(base_loc)):
-            if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
-                gn = tin[0]
-                dummy = tin[1]
+                    if (cur_loc_down[0] + 1 < 16):
+                        try:
+                            neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1]])
+                            index2 = base_loc_down.index(neighbours[-1])
+                            neighbours_po.append(base_points[index2])
+                        except:
+                            pass
 
-        return dummy, base_loc, base_points, base_loc_down, tin[2]
 
-    if (mode == 2):  # for the second goal
-        # print(base_loc)
-        # dummy = [350,350]
-        gn = -10000000  # random initial value
-        for i in range(len(base_loc)):
-            if (abs(int(cur_loc[0] / 50) - int(base_loc[i][0] / 50)) + abs(
-                    int(cur_loc[1] / 50) - int(base_loc[i][1] / 50)) < 0.1):
-                # dummy = [350,350]
-                pass
+            elif (cur_loc_down[0] % 2 == 1 and cur_loc_down[1] % 2 == 0):
+                if (cur_loc_down[1] - 1 > 0 or cur_loc_down[1] + 1 < 16):
+                    if(cur_loc_down[1] - 1 > 0):
+                        try:
+                            neighbours.append([cur_loc_down[0], cur_loc_down[1] - 1])
+                            index1 = base_loc_down.index(neighbours[-1])
+                            neighbours_po.append(base_points[index1])
+                        except:
+                            pass
+
+                    if (cur_loc_down[1] + 1 < 16):
+                        try:
+                            neighbours.append([cur_loc_down[0], cur_loc_down[1] + 1])
+                            index2 = base_loc_down.index(neighbours[-1])
+                            neighbours_po.append(base_points[index2])
+                        except:
+                            pass
+
+
             else:
-                if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                    tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
+
+                if (cur_loc_down[0] + 1 < 16 and cur_loc_down[1] + 1 < 16):
+                    try:
+                        neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1] + 1])
+                        index1 = base_loc_down.index(neighbours[-1])
+                        neighbours_po.append(base_points[index1])
+                    except:
+                        pass
+                if (cur_loc_down[0] - 1 > 0 and cur_loc_down[1] + 1 < 16):
+                    try:
+                        neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1] + 1])
+                        index1 = base_loc_down.index(neighbours[-1])
+                        neighbours_po.append(base_points[index1])
+                    except:
+                        pass
+                if (cur_loc_down[0] + 1 < 16 and cur_loc_down[1] - 1 > 0):
+                    try:
+                        neighbours.append([cur_loc_down[0] + 1, cur_loc_down[1] - 1])
+                        index1 = base_loc_down.index(neighbours[-1])
+                        neighbours_po.append(base_points[index1])
+                    except:
+                        pass
+                if (cur_loc_down[0] - 1 > 0 and cur_loc_down[1] - 1 > 0):
+                    try:
+                        neighbours.append([cur_loc_down[0] - 1, cur_loc_down[1] - 1])
+                        index1 = base_loc_down.index(neighbours[-1])
+                        neighbours_po.append(base_points[index1])
+                    except:
+                        pass
+
+        else:
+            if (cur_loc_down[0] + 2 < 16):
+                try:
+                    neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1]])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[0] + 2 < 16 and cur_loc_down[1] - 2 > 0):
+                try:
+                    neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1] - 2])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[0] + 2 < 16 and cur_loc_down[1] + 2 < 16):
+                try:
+                    neighbours.append([cur_loc_down[0] + 2, cur_loc_down[1] + 2])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[1] - 2 > 0):
+                try:
+                    neighbours.append([cur_loc_down[0], cur_loc_down[1] - 2])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[1] + 2 < 16):
+                try:
+                    neighbours.append([cur_loc_down[0], cur_loc_down[1] + 2])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[0] - 2 > 0):
+                try:
+                    neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1]])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[0] - 2 > 0 and cur_loc_down[1] - 2 > 0):
+                try:
+                    neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1] - 2])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+            if (cur_loc_down[0] - 2 > 0 and cur_loc_down[1] + 2 < 16):
+                try:
+                    neighbours.append([cur_loc_down[0] - 2, cur_loc_down[1] + 2])
+                    index1 = base_loc_down.index(neighbours[-1])
+                    neighbours_po.append(base_points[index1])
+                except:
+                    pass
+
+
+        for j in range(len(neighbours)):
+            for i in range(2):
+                neighbours[j][i] = 50 * neighbours[j][i]
+
+        min_loc = neighbours[neighbours_po.index(min(neighbours_po))]
+
+        goal_location = gain(cur_loc, cur_po, min_loc, 5, 0, 0, gain_mode)
+        print(goal_location, cur_po)
+        print(150)
+        return [[cur_loc[0], goal_location[1]], [goal_location[0], goal_location[1]]]
+
+
+    """
+    except:
+        print(2)
+        if (mode == 1):  # for the initial goal
+
+            try:
+                comp_loc.append(list(info['atlas'][0]))
+                comp_points.append(info['atlas'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['nebula'][0]))
+                comp_points.append(info['nebula'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['mechrix'][0]))
+                comp_points.append(info['mechrix'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['tulumba'][0]))
+                comp_points.append(info['tulumba'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['ohmygroup'][0]))
+                comp_points.append(info['ohmygroup'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['ducati'][0]))
+                comp_points.append(info['ducati'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['backspacex'][0]))
+                comp_points.append(info['backspacex'][1])
+            except:
+                pass
+            try:
+                comp_loc.append(list(info['hepsi1'][0]))
+                comp_points.append(info['hepsi1'][1])
+            except:
+                pass
+            gn = -100000  # random initial value
+            # sorting algorithm for finding the optimal path
+            for i in range(len(base_loc)):
+                if (gain(cur_loc, cur_po, base_loc[i], base_points[i], comp_loc, comp_points, gain_mode)[0] > gn):
+                    tin = gain(cur_loc, cur_po, base_loc[i], base_points[i], comp_loc, comp_points, gain_mode)
                     gn = tin[0]
                     dummy = tin[1]
 
-        return dummy, base_loc, base_points, base_loc_down, tin[2]
+            return dummy, base_loc, base_points, base_loc_down, tin[2]
 
+        if (mode == 2):  # for the second goal
+            # print(base_loc)
+            # dummy = [350,350]
+            gn = -10000000  # random initial value
+            for i in range(len(base_loc)):
+                if (abs(int(cur_loc[0] / 50) - int(base_loc[i][0] / 50)) + abs(
+                        int(cur_loc[1] / 50) - int(base_loc[i][1] / 50)) < 0.1):
+                    # dummy = [350,350]
+                    pass
+                else:
+                    if (gain(cur_loc, cur_po, base_loc[i], base_points[i], comp_loc, comp_points, gain_mode)[0] > gn):
+                        tin = gain(cur_loc, cur_po, base_loc[i], base_points[i], comp_loc, comp_points, gain_mode)
+                        gn = tin[0]
+                        dummy = tin[1]
 
-def gain(current, current_point, goal, goal_point):
+            return dummy, base_loc, base_points, base_loc_down, tin[2]
+    """
+
+def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_mode):
     if (current_point - goal_point) < 0:
         return [-10000000, 0]
     else:
@@ -91,14 +295,39 @@ def gain(current, current_point, goal, goal_point):
         p8 = [goal[0] + 25, goal[1] + 4]  # left middle
         p = [p1, p2, p3, p4, p5, p6, p7, p8]
         # p = [p1, p3, p5, p7]
-        cost = 10000  # initial high cost
-        for j in range(len(p)):
-            distance = ((current[0] - p[j][0]) ** 2 + (current[1] - p[j][1]) ** 2) ** 0.5
-            if (cost > distance):
-                cost = distance
-                goal = p[j]
-        gain = goal_point * 2 - distance*3
-        return [gain, goal, goal_point]
+        if (gain_mode == 0):
+            temp_dist = 1000
+            cost = 10000  # initial high cost
+            for j in range(len(p)):
+                distance = ((current[0] - p[j][0]) ** 2 + (current[1] - p[j][1]) ** 2) ** 0.5
+                if (cost > distance):
+                    cost = distance
+                    goal = p[j]
+
+                for i in range(len(comp_points)):
+                    if (goal_point - comp_points[i] > 0):
+                        distance2 = ((comp_loc[i][0] - p[j][0]) ** 2 + (comp_loc[i][1] - p[j][1]) ** 2) ** 0.5
+                        if (distance2 < temp_dist):
+                            temp_dist = distance2
+
+
+                    else:
+                        pass
+
+            # gain = goal_point*2-distance*3.5
+            gain = goal_point * 2 - distance * 3.5 + temp_dist * 4
+            return [gain, goal, goal_point]
+
+        else:
+            min_dist = 100000
+
+            for j in range(len(p)):
+                distance = ((current[0] - p[j][0]) ** 2 + (current[1] - p[j][1]) ** 2) ** 0.5
+                if (distance < min_dist):
+                    min_dist = distance
+                    tp = p[j]
+
+            return tp
 
 
 ##A* algorithm
@@ -222,8 +451,6 @@ def astar(maze, start, end):
 
 def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
     bo = 0
-    # error 100 den büyükken aşağıdaki metot, diğer durum için downsample edip A* kullanılabilir
-    # goal bulamadığı zaman random u da çağıralım
 
     # down sample the goal and current position
     goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
@@ -292,7 +519,6 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
         path = [[int(current[0]), nx1], [ny1, nx1], [ny1, nx2], [ny2, nx2]]
         return path
     else:
-        print("A****")
         goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
         # current2 = [int(current[0]/50), int(current[1]/50)]
         current2 = []
@@ -369,23 +595,28 @@ class meturoam:
 
         # get current location
         loc, game_point = info[self.name]
+
         y, x = loc  # get current y,x coordinates
         maxL = self.maxStep  # total travel
         global mode
         myinfo = info[self.name]
+        # try:
 
-        try:
+        # print(down_img[int(y/50),int(x/50)])
+        mode = 1
+        temp = goalPos(down_img, [y, x], game_point, color_codes, info)
+        print(temp)
 
-            # print(down_img[int(y/50),int(x/50)])
-            mode = 1
-            temp = goalPos(down_img, [y, x], game_point, color_codes)
+        if (len(temp) < 3):
+            return temp
+        else:
             goal = temp[0]
             path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
 
             if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
                 mode = 2
                 current = goal
-                temp2 = goalPos(down_img, current, game_point, color_codes)
+                temp2 = goalPos(down_img, current, game_point, color_codes, info)
                 goal = temp2[0]
                 if (temp[4] + temp2[4] > game_point):
                     pass
@@ -395,17 +626,22 @@ class meturoam:
                         path.append(path2[j])
                     mode = 1
 
-            #print(path)
+            # print(path)
             return path
+            
 
+        '''
         except:
-            if (y % 100 < 50):
-                return [[y, x], [y, x]]
+          if(y%100 < 50):
+            return [[y,x], [y,x]]
+          else:
+            if(y%50 < 25):
+              return [[y-26,x], [y-26,x]]
             else:
-                if (y % 50 < 25):
-                    return [[y - 26, x], [y - 26, x]]
-                else:
-                    return [[y + 26, x], [y + 26, x]]
+              return [[y+26,x], [y+26,x]]
+
+        '''
+
 
 
 
