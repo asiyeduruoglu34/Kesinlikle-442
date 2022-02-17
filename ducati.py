@@ -43,16 +43,18 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
         for k in range(len(temp[0])):
             base_points.append(color_codes[j][1])
 
+    base_loc_down = []
     ##going too fast on the beginnings
     neighbours = []
     neighbours_po = []
     gn = -100000  # random initial value
     cur_loc_down = [int(cur_loc[0] / 50), int(cur_loc[1] / 50)]
-
-    if (len(base_points) > 10 and cur_po > 50):
-        # for j in range(len(base_loc_down)):
-        #    for i in range(2):
-        #        base_loc_down[j][i] = int(base_loc_down[j][i]/50)
+    for j in range(len(base_loc_down)):
+        for i in range(2):
+            base_loc_down.append(base_loc[j][i])
+    ctrl = 1
+    if (len(base_points) > 1 and cur_po > 100):
+        ctrl = 0
         gain_mode = 1
         if (cur_loc_down[0] % 2 == 0 or cur_loc_down[1] % 2 == 0):
             if (cur_loc_down[0] % 2 == 0 and cur_loc_down[1] % 2 == 1):
@@ -177,16 +179,21 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
             for i in range(2):
                 neighbours[j][i] = 50 * neighbours[j][i]
 
-        print(neighbours)
+        # print(neighbours)
         if (len(neighbours) > 0):
             min_loc = neighbours[neighbours_po.index(max(neighbours_po))]
             goal_location = gain(cur_loc, cur_po, min_loc, max(neighbours_po), 0, 0, gain_mode)
+            # print(goal_location)
             return [[cur_loc[0], goal_location[1]], [goal_location[0], goal_location[1]]]
         else:
             gain_mode = 0
 
     if (gain_mode == 0):
         gain_mode = 0
+        if (ctrl == 1):
+            for j in range(len(base_loc)):
+                for i in range(2):
+                    base_loc[j][i] = int(base_loc[j][i] * 50)
         if (mode == 1):  # for the initial goal
 
             try:
@@ -230,10 +237,6 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
             except:
                 pass
 
-            for j in range(len(base_loc)):
-                for i in range(2):
-                    base_loc[j][i] = int(base_loc[j][i] * 50)
-
             gn = -100000  # random initial value
             # sorting algorithm for finding the optimal path
             for i in range(len(base_loc)):
@@ -260,7 +263,6 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                         dummy = tin[1]
 
             return dummy, base_loc, base_points, tin[2]
-
 
 
 def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_mode):
@@ -297,7 +299,7 @@ def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_m
                         pass
 
             # gain = goal_point*2-distance*3.5
-            gain = goal_point * 2 - distance * 3 + temp_dist * 2
+            gain = goal_point * 2 - distance * 3 + temp_dist * 0.2
             return [gain, goal, goal_point]
 
         else:
@@ -455,8 +457,8 @@ def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
     # print(del_x+1, del_y+1)
     d_list = []
 
-    for i in range(abs(del_x) + 1):
-        for j in range(abs(del_y) + 1):
+    for i in range(abs(del_x) + 2):
+        for j in range(abs(del_y) + 2):
             try:
                 if (del_x >= 0 and del_y >= 0):
                     index = base_loc.index([current2[0] + j, current2[1] + i])
@@ -587,33 +589,45 @@ class ducati:
             # print(down_img[int(y/50),int(x/50)])
             mode = 1
             temp = goalPos(down_img, [y, x], game_point, color_codes, info)
-            # print(temp)
 
             if (len(temp) < 3):
                 # print("runmode")
                 return temp
             else:
-                # print("normal")
-                goal = temp[0]
-                path = go([y, x], goal, maxL, game_point, temp[1], temp[2], down_img, img)
+                if (len(temp[2]) > 1):
+                    # print("normal")
+                    goal = temp[0]
+                    path = go([y, x], goal, maxL, game_point, temp[1], temp[2], down_img, img)
 
-                if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-                    mode = 2
-                    current = goal
-                    temp2 = goalPos(down_img, current, game_point, color_codes, info)
-                    goal = temp2[0]
-                    if (temp[3] + temp2[3] > game_point):
-                        pass
+                    if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
+                        mode = 2
+                        current = goal
+                        temp2 = goalPos(down_img, current, game_point, color_codes, info)
+                        goal = temp2[0]
+                        if (temp[3] + temp2[3] > game_point):
+                            pass
+                        else:
+                            path2 = go(current, goal, maxL, game_point, temp2[1], temp2[2], down_img, img)
+                            for j in range(len(path2)):
+                                path.append(path2[j])
+                            mode = 1
+                    # print(path)
+                    return path
+                else:
+                    # print("beyaza çektim")
+                    if (y % 100 < 50):
+                        return [[y, x], [y, x]]
                     else:
-                        path2 = go(current, goal, maxL, game_point, temp2[1], temp2[2], down_img, img)
-                        for j in range(len(path2)):
-                            path.append(path2[j])
-                        mode = 1
-                return path
+                        if (y % 50 < 25):
+                            return [[y - 26, x], [y - 26, x]]
+                        else:
+                            return [[y + 26, x], [y + 26, x]]
+
 
 
 
         except:
+            print("beyaza çektim")
             if (y % 100 < 50):
                 return [[y, x], [y, x]]
             else:
