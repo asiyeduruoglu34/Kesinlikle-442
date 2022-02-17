@@ -236,7 +236,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                 comp_points.append(info['hepsi1'][1])
             except:
                 pass
-            
+
 
             gn = -100000  # random initial value
             # sorting algorithm for finding the optimal path

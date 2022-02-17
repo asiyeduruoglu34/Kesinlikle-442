@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 
 
-class Node:
+class tulumda:
 
     def __init__(self, pos, parent=None):
         self.pos = pos
@@ -25,7 +25,7 @@ class Node:
         return str(self.pos)
 
 
-class tulumba:
+class ohmygroup:
 
     def __init__(self, userName, clrDictionary, maxStepSize, maxTime):
         self.name = userName  # your object will be given a user name, i.e. your group name

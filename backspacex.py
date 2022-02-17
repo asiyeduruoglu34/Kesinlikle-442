@@ -25,7 +25,7 @@ class Node:
         return str(self.pos)
 
 
-class tulumba:
+class backspacex:
 
     def __init__(self, userName, clrDictionary, maxStepSize, maxTime):
         self.name = userName  # your object will be given a user name, i.e. your group name

@@ -300,7 +300,7 @@ def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_m
                         pass
 
             # gain = goal_point*2-distance*3.5
-            gain = goal_point * 2 - distance * 3 + temp_dist * 0.4
+            gain = goal_point * 2 - distance * 3 + temp_dist * 0
             return [gain, goal, goal_point]
 
         else:
