@@ -195,7 +195,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                 for i in range(2):
                     base_loc[j][i] = int(base_loc[j][i] * 50)
         if (mode == 1):  # for the initial goal
-
+            """
             try:
                 comp_loc.append(list(info['atlas'][0]))
                 comp_points.append(info['atlas'][1])
@@ -236,6 +236,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                 comp_points.append(info['hepsi1'][1])
             except:
                 pass
+            """
 
             gn = -100000  # random initial value
             # sorting algorithm for finding the optimal path
@@ -263,7 +264,6 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                         dummy = tin[1]
 
             return dummy, base_loc, base_points, tin[2]
-
 
 
 def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_mode):
@@ -628,7 +628,7 @@ class ducati:
 
 
         except:
-            #print("beyaza çektim")
+            # print("beyaza çektim")
             if (y % 100 < 50):
                 return [[y, x], [y, x]]
             else:
