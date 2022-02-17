@@ -1,114 +1,132 @@
 import numpy as np
-import random
-import cv2
-from skimage import io
-import matplotlib.pyplot as plt
-from math import ceil, floor
+import time
+
+class atlas:
+
+    def __init__(self, userName, clrDictionary, maxStepSize, maxTime):
+        self.name = userName # your object will be given a user name, i.e. your group name
+        self.maxStep = maxStepSize # maximum length of the returned path from run()
+        self.maxTime = maxTime # run() is supposed to return before maxTime
+
+    def run(self, img, info):
+        colorz = {
+        'black':((1,1,1), 0, 13),
+        'clr100':((225, 1, 1), 100, 1),
+        'clr50':((1, 255, 1), 50, 2),
+        'clr30':((1, 1, 255), 30, 2),
+        'clr20':((200, 200, 1), 20, 2),
+        'clr10':((255, 1, 255), 10, 2),
+        'clr9':((1, 255, 255), 9, 3),
+        'clr8':((1,1,150), 8, 3),
+        'clr7':((120,120,40), 7, 3),
+        'clr6':((150,1,150), 6, 3),
+        'clr5':((1,150,150), 5, 3),
+        'clr4':((222,55,222), 4, 3),
+        'clr3':((1, 99, 55), 3, 3),
+        'clr2':((200, 100, 10),2, 3),
+        'clr1':((100, 10, 200),1, 3)
+        }
+        myinfo = info[self.name]
+        imS = img.shape[0] # assume square image and get size
+        loc, game_point = info[self.name]
+        y,x = loc # get current y,x coordinates
+        yonepix,xonepix = y//50+2,x//50+2
+        # a very simple randomizer
+        maxL = self.maxStep # total travel
+        newMap = np.zeros((19,19),dtype=int)
+        for i in range(7):
+            for j in range(7):
+                if img[75+100*i,75+100*j,0] == colorz['clr100'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr100'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr100'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr100'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr50'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr50'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr50'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr50'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr30'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr30'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr30'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr30'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr20'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr20'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr20'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr20'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr10'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr10'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr10'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr10'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr9'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr9'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr9'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr9'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr8'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr8'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr8'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr8'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr7'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr7'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr7'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr7'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr6'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr6'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr6'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr6'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr5'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr5'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr5'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr5'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr4'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr4'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr4'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr4'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr3'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr3'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr3'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr3'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr2'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr2'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr2'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr2'][1]
+                elif img[75+100*i,75+100*j,0] == colorz['clr1'][0][0] and img[75+100*i,75+100*j,1] == colorz['clr1'][0][1] and img[75+100*i,75+100*j,2] == colorz['clr1'][0][2]:
+                    newMap[2*i+3,2*j+3] = colorz['clr1'][1]
+
+        if game_point > 100:
+            num_neighbor = 2
+
+            left = max(0,yonepix-num_neighbor)
+            right = max(0,yonepix+num_neighbor+1)
+
+            bottom = max(0,xonepix-num_neighbor)
+            top = max(0,xonepix+num_neighbor+1)
+
+            sample = newMap[left:right,bottom:top]
+            sample[0,0], sample[np.shape(sample)[0]-3,np.shape(sample)[1]-3], sample[0,np.shape(sample)[1]-1], sample[np.shape(sample)[0]-1,0], sample[np.shape(sample)[0]-1,np.shape(sample)[1]-1] = 0, 0, 0, 0, 0
+
+            sample = np.where(sample > game_point, -1, sample)
+            max_neighbour = np.max(sample)
 
 
-def goalPos(down_img, cur_loc, cur_po, color_codes):
-    # print(color_codes)
-    base_loc = []  # color bases locations
-    base_points = []  # color points
+            index = np.where(sample == max_neighbour)
 
-    # find the locations of the colors
-    for j in range(len(color_codes)):
-        try:
-            temp = list(np.where(np.all(down_img == list(color_codes[j][0]), axis=2)))
-            # print(temp)
-        except:
-            #print("nereye gideceğimi bilmiyorum")
-            temp = [[], []]
-            pass
-        # print(color_codes[j][0])
-        if (len(temp[0]) == 0):
-            pass
-        elif (len(temp[0]) == 1):
-            temp2 = [temp[0][0], temp[1][0]]
-            base_loc.append(temp2)
-        elif (len(temp[0]) == 2):
-            temp2 = [temp[0][0], temp[1][0]]
-            base_loc.append(temp2)
-            temp2 = [temp[0][1], temp[1][1]]
-            base_loc.append(temp2)
-        elif (len(temp[0]) == 3):
-            temp2 = [temp[0][0], temp[1][0]]
-            base_loc.append(temp2)
-            temp2 = [temp[0][1], temp[1][1]]
-            base_loc.append(temp2)
-            temp2 = [temp[0][2], temp[1][2]]
-            base_loc.append(temp2)
-        for k in range(len(temp[0])):
-            base_points.append(color_codes[j][1])
-    base_loc_down = base_loc
-    # find the locations in the original image
-    for j in range(len(base_loc)):
-        for i in range(2):
-            base_loc[j][i] = 50 * base_loc[j][i]
+            dy = (index[0][0]-np.shape(sample)[0]+3)*50
+            dx = (index[1][0]-np.shape(sample)[1]+3)*50
+            xtarget = x + dx
+            ytarget = y + dy
 
-    # print(base_loc)
+            if (max_neighbour == 0) or ((xtarget <= 0) or (ytarget <= 0) or (xtarget >= 750) or (ytarget >= 750)):
+                xtarget = 375
+                ytarget = 375
+            coordslist = [[y,xtarget],[ytarget,xtarget]]
+        else:
+            sample = newMap
+            sample[0,0], sample[np.shape(sample)[0]-3,np.shape(sample)[1]-3], sample[0,np.shape(sample)[1]-1], sample[np.shape(sample)[0]-1,0], sample[np.shape(sample)[0]-1,np.shape(sample)[1]-1] = 0, 0, 0, 0, 0
 
-    if (mode == 1):  # for the initial goal
-        gn = -100000  # random initial value
-        # sorting algorithm for finding the optimal path
-        for i in range(len(base_loc)):
-            if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
-                gn = tin[0]
-                dummy = tin[1]
-
-        return dummy, base_loc, base_points, base_loc_down, tin[2]
-
-    if (mode == 2):  # for the second goal
-        # print(base_loc)
-        # dummy = [350,350]
-        gn = -10000000  # random initial value
-        for i in range(len(base_loc)):
-            if (abs(int(cur_loc[0] / 50) - int(base_loc[i][0] / 50)) + abs(
-                    int(cur_loc[1] / 50) - int(base_loc[i][1] / 50)) < 0.1):
-                # dummy = [350,350]
-                pass
-            else:
-                if (gain(cur_loc, cur_po, base_loc[i], base_points[i])[0] > gn):
-                    tin = gain(cur_loc, cur_po, base_loc[i], base_points[i])
-                    gn = tin[0]
-                    dummy = tin[1]
-
-        return dummy, base_loc, base_points, base_loc_down, tin[2]
+            sample = np.where(sample > game_point, -1, sample)
+            max_neighbour = np.max(sample)
 
 
-def gain(current, current_point, goal, goal_point):
-    if (current_point - goal_point) < 0:
-        return [-10000000, 0]
-    else:
-        p1 = [goal[0] + 4, goal[1] + 4]  # top left
-        p2 = [goal[0] + 4, goal[1] + 25]  # top middle
-        p3 = [goal[0] + 4, goal[1] + 46]  # top right
-        p4 = [goal[0] + 25, goal[1] + 46]  # right middle
-        p5 = [goal[0] + 46, goal[1] + 46]  # bottom right
-        p6 = [goal[0] + 46, goal[1] + 25]  # bottom middle
-        p7 = [goal[0] + 46, goal[1] + 4]  # bottom left
-        p8 = [goal[0] + 25, goal[1] + 4]  # left middle
-        p = [p1, p2, p3, p4, p5, p6, p7, p8]
-        # p = [p1, p3, p5, p7]
-        cost = 10000  # initial high cost
-        for j in range(len(p)):
-            distance = ((current[0] - p[j][0]) ** 2 + (current[1] - p[j][1]) ** 2) ** 0.5
-            if (cost > distance):
-                cost = distance
-                goal = p[j]
-        gain = goal_point * 2 - distance*3
-        return [gain, goal, goal_point]
+            index = np.where(sample == max_neighbour)
+
+            dy = (index[0][0]-yonepix)*50
+            dx = (index[1][0]-xonepix)*50
+            xtarget = x + dx
+            ytarget = y + dy
+            if ytarget <= 0:
+                dy = 50
+            if ytarget >= 750:
+                dy = -50
+            if xtarget <= 0:
+                dx = 50
+            if xtarget >= 750:
+                dx = -50
+
+            xtarget = x + dx
+            ytarget = y + dy
+
+            coords = astar(sample,(yonepix,xonepix),(index[0][0],index[1][0]), max_neighbour)
+            coordslist = []
+            for i in coords:
+              new_list = [(j * 50)-75 for j in i ]
+              coordslist.append(list(new_list))
+
+        return coordslist
 
 
-##A* algorithm
-
-def heur(ch_p, en_p):
-    h = ((ch_p[0] - en_p[0]) ** 2) + ((ch_p[1] - en_p[1]) ** 2)
-    return h
-
-
-# A* algorithm is also adopted from https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
 class Node():
     """A node class for A* Pathfinding"""
 
@@ -124,7 +142,7 @@ class Node():
         return self.position == other.position
 
 
-def astar(maze, start, end):
+def astar(maze, start, end, endvalue):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
     # Create start and end node
@@ -162,31 +180,29 @@ def astar(maze, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return path[::-1]  # Return reversed path
+            return path[::-1] # Return reversed path
 
         # Generate children
         children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:  # 4 neighbours
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
 
             # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (
-                    len(maze[len(maze) - 1]) - 1) or node_position[1] < 0:
+            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
 
-            # node_color = mazeImg[node_position[0], node_position[1], :]
             # Make sure walkable terrain
-            # if node_color[0] == 0 and node_color[1] == 0 and node_color[0] == 0:
-            # continue
+            if (maze[node_position[0]][node_position[1]] != 0) and (maze[node_position[0]][node_position[1]] != endvalue):
+                continue
 
             # Create new node
             new_node = Node(current_node, node_position)
 
             # Append
             children.append(new_node)
-        # print(node_color)
+
         # Loop through children
         for child in children:
 
@@ -195,21 +211,10 @@ def astar(maze, start, end):
                 if child == closed_child:
                     continue
 
-            node_color = maze[node_position[0], node_position[1]]
-            # print(node_color)
-            # print(maze[start[0], start[1]])
-
             # Create the f, g, and h values
-            # print(current_node.position)
-            for j in range(3):
-                if ((node_color[j] == maze[start[0], start[1]])[j] or (node_color[j] == maze[end[0], end[1]][j])):
-                    child.g = child.g + 1
-                else:
-                    child.g = child.g + 1000
-
-            child.h = heur(child.position, end_node.position)
-            child.f = child.g + child.h
-            # print(child.f)
+            child.g = current_node.g + 1
+            child.h = abs((child.position[0] - end_node.position[0])) + abs((child.position[1] - end_node.position[1]))
+            child.f = 0.1*child.g + 0.1*child.h
 
             # Child is already in the open list
             for open_node in open_list:
@@ -218,194 +223,3 @@ def astar(maze, start, end):
 
             # Add the child to the open list
             open_list.append(child)
-
-
-def go(current, goal, maxL, cur_po, base_loc, base_points, down_img, img):
-    bo = 0
-    # error 100 den büyükken aşağıdaki metot, diğer durum için downsample edip A* kullanılabilir
-    # goal bulamadığı zaman random u da çağıralım
-
-    # down sample the goal and current position
-    goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
-    current2 = []
-    if (current[0] / 50 - int(current[0] / 50) > 0.5):
-        current2.append(int(current[0] / 50) + 1)
-    else:
-        current2.append(int(current[0] / 50))
-    if (current[1] / 50 - int(current[1] / 50) > 0.5):
-        current2.append(int(current[1] / 50) + 1)
-    else:
-        current2.append(int(current[1] / 50))
-    del_x = goal2[1] - current2[1]
-    del_y = goal2[0] - current2[0]
-
-    for j in range(len(base_loc)):
-        for i in range(2):
-            base_loc[j][i] = int(base_loc[j][i] / 50)
-    # print(base_loc)
-    # print(del_x+1, del_y+1)
-    d_list = []
-
-    for i in range(abs(del_x) + 1):
-        for j in range(abs(del_y) + 1):
-            try:
-                if (del_x >= 0 and del_y >= 0):
-                    index = base_loc.index([current2[0] + j, current2[1] + i])
-                    d_list.append(base_points[index])
-                elif (del_x >= 0 and del_y <= 0):
-                    index = base_loc.index([current2[0] - j, current2[1] + i])
-                    d_list.append(base_points[index])
-                elif (del_x <= 0 and del_y >= 0):
-                    index = base_loc.index([current2[0] + j, current2[1] - i])
-                    d_list.append(base_points[index])
-                elif (del_x <= 0 and del_y <= 0):
-                    index = base_loc.index([current2[0] - j, current2[1] - i])
-                    d_list.append(base_points[index])
-                else:
-                    pass
-            except:
-                pass
-    # print(d_list)
-    max1, max2 = 0, 0
-    try:
-        max1 = max(d_list)
-        d_list.pop(d_list.index(max1))
-        if (len(d_list) != 0):
-            max2 = max(d_list)
-    except:
-        pass
-
-    if (max1 + max2 > cur_po):
-        bo = 1
-    else:
-        bo = 0
-
-    if (bo == 0):
-        dist_x = goal[1] - current[1]
-        dist_y = goal[0] - current[0]
-
-        nx1 = int(current[1]) + int(dist_x / 2)
-        ny1 = int(current[0]) + int(dist_y / 2)
-        nx2 = int(nx1) + int(dist_x / 2)
-        ny2 = int(ny1) + int(dist_y / 2)
-
-        path = [[int(current[0]), nx1], [ny1, nx1], [ny1, nx2], [ny2, nx2]]
-        return path
-    else:
-        print("A****")
-        goal2 = [int(goal[0] / 50), int(goal[1] / 50)]
-        # current2 = [int(current[0]/50), int(current[1]/50)]
-        current2 = []
-        if (current[0] / 50 - int(current[0] / 50) > 0.5):
-            current2.append(int(current[0] / 50) + 1)
-        else:
-            current2.append(int(current[0] / 50))
-        if (current[1] / 50 - int(current[1] / 50) > 0.5):
-            current2.append(int(current[1] / 50) + 1)
-        else:
-            current2.append(int(current[1] / 50))
-
-        current2 = tuple(current2)
-        goal2 = tuple(goal2)
-
-        path = astar(down_img, current2, goal2)
-
-        path2 = []
-        for j in range(len(path)):
-            path2.append(list(path[j]))
-
-        for j in range(len(path2)):
-            for i in range(2):
-                path2[j][i] = 50 * path2[j][i]
-
-        current3 = path2[0][0]
-        path2.insert(0, [current3, current[1]])
-
-        for j in range(len(path2) - 1):
-            for i in range(2):
-                if (path2[j][i] == 0 or path2[j][i] == 750):
-                    pass
-                elif (path2[j][i] % 100 == 0):
-                    path2[j][i] = path2[j][i] + 2
-                elif (path2[j][i] % 50 == 0):
-                    path2[j][i] = path2[j][i] - 2
-
-        return path2
-
-
-class atlas:
-
-    def __init__(self, userName, clrDictionary, maxStepSize, maxTime):
-        self.name = userName  # your object will be given a user name, i.e. your group name
-        self.maxStep = maxStepSize  # maximum length of the returned path from run()
-        self.maxTime = maxTime  # run() is supposed to return before maxTime
-        global clr
-        clr = clrDictionary
-
-    def run(self, img, info):
-
-        ratio = 0.02  # downsample ratio
-        down_img = cv2.resize(img, (0, 0), fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST)  # downsample the image
-        down_img[0], down_img[1], down_img[2] = down_img[2], down_img[1], down_img[0]  # bgr2rgb
-
-        color_codes = []  # create a list then add color informations
-        color_codes.append(list(clr['clr100'][:]))
-        color_codes.append(list(clr['clr50'][:]))
-        color_codes.append(list(clr['clr30'][:]))
-        color_codes.append(list(clr['clr20'][:]))
-        color_codes.append(list(clr['clr10'][:]))
-        color_codes.append(list(clr['clr9'][:]))
-        color_codes.append(list(clr['clr8'][:]))
-        color_codes.append(list(clr['clr7'][:]))
-        color_codes.append(list(clr['clr6'][:]))
-        color_codes.append(list(clr['clr5'][:]))
-        color_codes.append(list(clr['clr4'][:]))
-        color_codes.append(list(clr['clr3'][:]))
-        color_codes.append(list(clr['clr2'][:]))
-        color_codes.append(list(clr['clr1'][:]))
-        # print(color_codes)
-
-        imS = img.shape[0]  # assume square image and get size
-
-        # get current location
-        loc, game_point = info[self.name]
-        y, x = loc  # get current y,x coordinates
-        maxL = self.maxStep  # total travel
-        global mode
-        myinfo = info[self.name]
-
-        try:
-
-            # print(down_img[int(y/50),int(x/50)])
-            mode = 1
-            temp = goalPos(down_img, [y, x], game_point, color_codes)
-            goal = temp[0]
-            path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
-
-            if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-                mode = 2
-                current = goal
-                temp2 = goalPos(down_img, current, game_point, color_codes)
-                goal = temp2[0]
-                if (temp[4] + temp2[4] > game_point):
-                    pass
-                else:
-                    path2 = go(current, goal, maxL, game_point, temp2[3], temp2[2], down_img, img)
-                    for j in range(len(path2)):
-                        path.append(path2[j])
-                    mode = 1
-
-            #print(path)
-            return path
-
-        except:
-            if (y % 100 < 50):
-                return [[y, x], [y, x]]
-            else:
-                if (y % 50 < 25):
-                    return [[y - 26, x], [y - 26, x]]
-                else:
-                    return [[y + 26, x], [y + 26, x]]
-
-
-
