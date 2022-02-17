@@ -53,7 +53,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
         for i in range(2):
             base_loc_down.append(base_loc[j][i])
     ctrl = 1
-    if (len(base_points) > 1 and cur_po > 100):
+    if (len(base_points) > 18 and cur_po > 100):
         ctrl = 0
         gain_mode = 1
         if (cur_loc_down[0] % 2 == 0 or cur_loc_down[1] % 2 == 0):
@@ -237,7 +237,6 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
             except:
                 pass
 
-
             gn = -100000  # random initial value
             # sorting algorithm for finding the optimal path
             for i in range(len(base_loc)):
@@ -264,6 +263,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
                         dummy = tin[1]
 
             return dummy, base_loc, base_points, tin[2]
+
 
 
 def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_mode):
@@ -300,7 +300,7 @@ def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_m
                         pass
 
             # gain = goal_point*2-distance*3.5
-            gain = goal_point * 2 - distance * 3 + temp_dist * 0
+            gain = goal_point * 2 - distance * 2.5 + temp_dist * 0.4
             return [gain, goal, goal_point]
 
         else:
@@ -313,6 +313,7 @@ def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_m
                     tp = p[j]
 
             return tp
+
 
 
 ##A* algorithm
@@ -636,5 +637,7 @@ class meturoam:
                     return [[y - 26, x], [y - 26, x]]
                 else:
                     return [[y + 26, x], [y + 26, x]]
+
+
 
 
