@@ -265,6 +265,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes, info):
             return dummy, base_loc, base_points, tin[2]
 
 
+
 def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_mode):
     if (current_point - goal_point) < 0:
         return [-10000000, 0]
@@ -299,7 +300,7 @@ def gain(current, current_point, goal, goal_point, comp_loc, comp_points, gain_m
                         pass
 
             # gain = goal_point*2-distance*3.5
-            gain = goal_point * 2 - distance * 3 + temp_dist * 0.2
+            gain = goal_point * 2 - distance * 3 + temp_dist * 0.4
             return [gain, goal, goal_point]
 
         else:
