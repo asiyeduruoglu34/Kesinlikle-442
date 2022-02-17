@@ -176,14 +176,20 @@ class tulumba:
         my_path.insert(0, my_min_2[1])
         my_path.insert(0, my_min[1])
         resultantPath = []
-        print(my_path)
+
+        dummyStep = free_corridor(self.myPos[0], self.myPos[1], my_path[0][0], my_path[0][1])
+        resultantPath.append(dummyStep)
+        my_path[0] = (dummyStep[-1][0], dummyStep[-1][1])
 
         for i in range(1, len(my_path)):
-            resultantPath.append(free_corridor(my_path[i - 1][0], my_path[i - 1][1], my_path[i][0], my_path[i][1]))
-        # flatten resultantPath
-        print(resultantPath)
+            dummyStep = free_corridor(my_path[i - 1][0], my_path[i - 1][1], my_path[i][0], my_path[i][1])
+            resultantPath.append(dummyStep)
+            my_path[i] = (dummyStep[-1][0], dummyStep[-1][1])
 
-        return my_path
+        # flatten resultantPath
+        flat_list = [item for sublist in resultantPath for item in sublist]
+
+        return flat_list
 
 
 def astar(start, end, costmap, presclr=1):
@@ -274,7 +280,7 @@ def manhattan(start, end):
     return abs(start[0] - end[0]) + abs(start[1] - end[1])
 
 
-def create_solo_route(x1, x2, y1, y2):
+def create_route(x1, x2, y1, y2):
     array = [[], []]
 
     if x1 >= x2 + 24:
@@ -306,7 +312,7 @@ def free_corridor(myX, myY, targetX, targetY):
     quotTY = targetY // 50
     array = []
     if (abs(quotTX - quotX) + abs(quotTY - quotY)) < 3:
-        array = create_solo_route(myX, targetX, myY, targetY)
+        array = create_route(myX, targetX, myY, targetY)
         return array
 
     else:
@@ -357,14 +363,14 @@ def free_corridor(myX, myY, targetX, targetY):
                     elif newX <= targetX - 24:
                         array.append([targetX - 23, targetY + 28])
                         array.append([targetX - 23, targetY + 23])
-                    else:
-                        array.append([myX, targetY - 28])
-                        if newX >= targetX + 24:
-                            array.append([targetX + 23, targetY - 28])
-                            array.append([targetX + 23, targetY - 23])
-                        elif newX <= targetX - 24:
-                            array.append([targetX - 23, targetY - 28])
-                            array.append([targetX - 23, targetY - 23])
+                else:
+                    array.append([newX, targetY - 28])
+                    if newX >= targetX + 24:
+                        array.append([targetX + 23, targetY - 28])
+                        array.append([targetX + 23, targetY - 23])
+                    elif newX <= targetX - 24:
+                        array.append([targetX - 23, targetY - 28])
+                        array.append([targetX - 23, targetY - 23])
 
             else:
                 array.append([myX + (52 - remX), myY])
@@ -377,12 +383,12 @@ def free_corridor(myX, myY, targetX, targetY):
                     elif newX <= targetX - 24:
                         array.append([targetX - 23, targetY + 28])
                         array.append([targetX - 23, targetY + 23])
-                    else:
-                        array.append([myX, targetY - 28])
-                        if newX >= targetX + 24:
-                            array.append([targetX + 23, targetY - 28])
-                            array.append([targetX + 23, targetY - 23])
-                        elif newX <= targetX - 24:
-                            array.append([targetX - 23, targetY - 28])
-                            array.append([targetX - 23, targetY - 23])
+                else:
+                    array.append([newX, targetY - 28])
+                    if newX >= targetX + 24:
+                        array.append([targetX + 23, targetY - 28])
+                        array.append([targetX + 23, targetY - 23])
+                    elif newX <= targetX - 24:
+                        array.append([targetX - 23, targetY - 28])
+                        array.append([targetX - 23, targetY - 23])
     return array
