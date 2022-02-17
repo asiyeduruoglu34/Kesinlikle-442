@@ -17,7 +17,7 @@ def goalPos(down_img, cur_loc, cur_po, color_codes):
             temp = list(np.where(np.all(down_img == list(color_codes[j][0]), axis=2)))
             # print(temp)
         except:
-            print("nereye gideceğimi bilmiyorum")
+            #print("nereye gideceğimi bilmiyorum")
             temp = [[], []]
             pass
         # print(color_codes[j][0])
@@ -383,7 +383,6 @@ class atlas:
             path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
 
             if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-                print("ikinciyi düşünüyorum")
                 mode = 2
                 current = goal
                 temp2 = goalPos(down_img, current, game_point, color_codes)
@@ -396,7 +395,7 @@ class atlas:
                         path.append(path2[j])
                     mode = 1
 
-            print(path)
+            #print(path)
             return path
 
         except:

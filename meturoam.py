@@ -383,7 +383,6 @@ class meturoam:
             path = go([y, x], goal, maxL, game_point, temp[3], temp[2], down_img, img)
 
             if (abs(goal[0] - y) + abs(goal[1] - x) < maxL and len(temp[2]) > 1):
-                print("ikinciyi düşünüyorum")
                 mode = 2
                 current = goal
                 temp2 = goalPos(down_img, current, game_point, color_codes)
@@ -396,7 +395,7 @@ class meturoam:
                         path.append(path2[j])
                     mode = 1
 
-            print(path)
+            #print(path)
             return path
 
         except:
